@@ -1,0 +1,6 @@
+{
+  "name": "InclusiveTest — Digital Accessibility Testing & Remediation",
+  "description": "Expert accessibility testing, manual audits, remediation support, and VPAT/ACR consulting for enterprise and SaaS teams.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
