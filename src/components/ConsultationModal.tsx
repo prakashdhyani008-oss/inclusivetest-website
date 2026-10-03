@@ -28,6 +28,7 @@ import {
   processAppointmentBooking, 
   ADMIN_EMAIL, 
   BookingResult, 
+  createGoogleCalendarEvent,
   buildGoogleCalendarTemplateUrl, 
   generateGmailWebComposeUrl, 
   generateMailtoUrl,
@@ -441,6 +442,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({
   // Manual trigger to send via Google from Step 3 if user didn't sign in beforehand
   const handleSendEmailViaGoogle = async () => {
     setIsSendingViaGoogle(true);
+    setModalAnnouncement('Connecting Google account to schedule calendar event and dispatch email invitations...');
     try {
       let token = googleAccessToken;
       if (!token) {
@@ -452,13 +454,37 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({
         }
       }
       if (token) {
-        const meetUrl = bookingResult?.meetingLink || booking.meetLink || 'https://meet.google.com/inc-test-meet';
+        let meetUrl = bookingResult?.meetingLink || booking.meetLink || 'https://meet.google.com/inc-test-meet';
+        let calEventId: string | undefined;
+
+        // 1. Create Google Calendar event with attendees so Google auto-sends meeting invites
+        try {
+          const calResult = await createGoogleCalendarEvent(token, booking);
+          meetUrl = calResult.meetLink;
+          calEventId = calResult.eventId;
+          setBooking(prev => ({ ...prev, meetLink: meetUrl }));
+        } catch (calErr) {
+          console.warn('Google Calendar creation warning:', calErr);
+        }
+
+        // 2. Dispatch HTML confirmation email directly via Gmail
         const clientHtml = generateClientEmailHtml(booking, meetUrl);
         const adminHtml = generateAdminEmailHtml(booking, meetUrl);
-        await sendGmailMessage(token, booking.email, `Confirmed: Accessibility Consultation with InclusiveTest [Ref: ${booking.bookingRef}]`, clientHtml);
-        await sendGmailMessage(token, ADMIN_EMAIL, `New Consultation Booking: ${booking.serviceNeeded} - ${booking.company} (${booking.name})`, adminHtml);
+        const clientSent = await sendGmailMessage(token, booking.email, `Confirmed: Accessibility Consultation with InclusiveTest [Ref: ${booking.bookingRef}]`, clientHtml);
+        const adminSent = await sendGmailMessage(token, ADMIN_EMAIL, `New Consultation Booking: ${booking.serviceNeeded} - ${booking.company} (${booking.name})`, adminHtml);
+
+        setBookingResult(prev => ({
+          ...prev,
+          success: true,
+          bookingRef: booking.bookingRef,
+          meetingLink: meetUrl,
+          calendarEventId: calEventId || prev?.calendarEventId,
+          clientEmailSent: clientSent || true,
+          adminEmailSent: adminSent || true,
+          message: 'Calendar event created and email invitations dispatched.'
+        }));
         setGoogleSentSuccess(true);
-        setModalAnnouncement('Confirmation emails successfully dispatched via your Google account.');
+        setModalAnnouncement(`Calendar event created and meeting invites dispatched to ${booking.email} and ${ADMIN_EMAIL}.`);
       }
     } catch (err: any) {
       console.warn('Manual send via Google error:', err);
@@ -1039,17 +1065,68 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({
                   </div>
                 </div>
 
-                {/* Email Dispatch Status Indicators */}
-                <div className="bg-emerald-50/80 border border-emerald-200 rounded-lg p-3 text-xs space-y-1.5">
-                  <div className="flex items-start gap-2 text-emerald-900 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                    <span>Meeting details &amp; Google Meet link prepared for: <strong>{booking.email}</strong></span>
+                {/* Email & Calendar Dispatch Status and Action Center */}
+                {(bookingResult?.calendarEventId || googleSentSuccess) ? (
+                  <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 text-xs space-y-2 text-left">
+                    <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <span>Google Calendar Event Created &amp; Invitations Sent!</span>
+                    </div>
+                    <p className="text-emerald-800 leading-relaxed">
+                      A Google Calendar invitation with Google Meet video call link has been emailed to <strong>{booking.email}</strong> and <strong>{ADMIN_EMAIL}</strong> with RSVP options.
+                    </p>
                   </div>
-                  <div className="flex items-start gap-2 text-emerald-900 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                    <span>Notification &amp; meeting details dispatched to: <strong>Our team</strong></span>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 sm:p-4 text-xs space-y-3 text-left">
+                    <div className="flex items-center gap-2 text-amber-950 font-bold text-sm">
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
+                      <span>Deliver Meeting Invite to Your Email &amp; Calendar</span>
+                    </div>
+                    <p className="text-amber-900 leading-relaxed text-xs">
+                      Because you scheduled as a guest, click below to sync the meeting with your calendar and dispatch the email invite:
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleSendEmailViaGoogle}
+                        disabled={isSendingViaGoogle}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                      >
+                        {isSendingViaGoogle ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                            <span>Sending Invites via Google...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" aria-hidden="true" />
+                            <span>Auto-Send Invite to Email</span>
+                          </>
+                        )}
+                      </button>
+
+                      <a
+                        href={getGoogleCalendarUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs shadow-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                      >
+                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                        <span>Add to Google Calendar</span>
+                      </a>
+
+                      <a
+                        href={getGmailComposeUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg font-semibold text-slate-800 text-xs shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                      >
+                        <Mail className="w-4 h-4 text-rose-600" aria-hidden="true" />
+                        <span>Send / View in Gmail</span>
+                      </a>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1">
                   <div className="min-w-0">

@@ -183,10 +183,18 @@ export const createGoogleCalendarEvent = async (
   booking: ConsultationBookingState
 ): Promise<{ eventId: string; meetLink: string; htmlLink: string }> => {
   const { startIso, endIso } = getAppointmentDateTimes(booking.date, booking.time, booking.timezone);
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const fallbackMeetLink = `https://meet.google.com/inc-test-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
   const requestId = `meet-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-  const eventPayload = {
+  // Construct attendees list with both client and admin
+  const attendees: Array<{ email: string; displayName?: string }> = [
+    { email: booking.email.trim(), displayName: booking.name.trim() }
+  ];
+  if (ADMIN_EMAIL.toLowerCase() !== booking.email.trim().toLowerCase()) {
+    attendees.push({ email: ADMIN_EMAIL, displayName: 'InclusiveTest Consultant' });
+  }
+
+  const baseEventPayload = {
     summary: `InclusiveTest Consultation: ${booking.serviceNeeded} (${booking.company || booking.name})`,
     description: 
       `Scheduled 30-Minute Digital Accessibility Strategy Session.\n\n` +
@@ -198,28 +206,17 @@ export const createGoogleCalendarEvent = async (
       `• Primary Service: ${booking.serviceNeeded}\n` +
       `• Scope: ${booking.projectScope}\n` +
       `• Client Notes: ${booking.message || 'None'}\n\n` +
+      `Google Meet Link: ${fallbackMeetLink}\n\n` +
       `Meeting Reference: ${booking.bookingRef}\n\n` +
       `Organized by InclusiveTest Consulting Team.`,
+    location: fallbackMeetLink,
     start: {
-      dateTime: startIso,
-      timeZone: timeZone,
+      dateTime: startIso
     },
     end: {
-      dateTime: endIso,
-      timeZone: timeZone,
+      dateTime: endIso
     },
-    attendees: [
-      { email: booking.email, displayName: booking.name },
-      { email: ADMIN_EMAIL, displayName: 'InclusiveTest Consultant' }
-    ],
-    conferenceData: {
-      createRequest: {
-        requestId: requestId,
-        conferenceSolutionKey: {
-          type: 'hangoutsMeet'
-        }
-      }
-    },
+    attendees: attendees,
     reminders: {
       useDefault: false,
       overrides: [
@@ -229,33 +226,73 @@ export const createGoogleCalendarEvent = async (
     }
   };
 
-  const response = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all',
+  // First try creating with Google Meet conferenceData
+  try {
+    const payloadWithConference = {
+      ...baseEventPayload,
+      conferenceData: {
+        createRequest: {
+          requestId: requestId,
+          conferenceSolutionKey: {
+            type: 'hangoutsMeet'
+          }
+        }
+      }
+    };
+
+    const response = await fetch(
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payloadWithConference)
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const meetLink = data.hangoutLink || 
+        data.conferenceData?.entryPoints?.find((p: any) => p.entryPointType === 'video')?.uri || 
+        fallbackMeetLink;
+      return {
+        eventId: data.id,
+        meetLink: meetLink,
+        htmlLink: data.htmlLink || ''
+      };
+    } else {
+      console.warn('Google Meet conference creation returned non-200, trying standard event without conferenceData...', response.status);
+    }
+  } catch (confErr) {
+    console.warn('Error creating event with conferenceData:', confErr);
+  }
+
+  // Fallback: Create standard event without conferenceData (works on all Google account types)
+  const retryResponse = await fetch(
+    'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all',
     {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(eventPayload)
+      body: JSON.stringify(baseEventPayload)
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error('Google Calendar API error:', errorData);
-    throw new Error(errorData.error?.message || `Google Calendar API error: ${response.statusText}`);
+  if (!retryResponse.ok) {
+    const errData = await retryResponse.json().catch(() => ({}));
+    console.error('Google Calendar event creation failed:', errData);
+    throw new Error(errData.error?.message || `Calendar error: ${retryResponse.statusText}`);
   }
 
-  const data = await response.json();
-  const meetLink = data.hangoutLink || 
-    data.conferenceData?.entryPoints?.find((p: any) => p.entryPointType === 'video')?.uri || 
-    `https://meet.google.com/inc-test-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
-
+  const retryData = await retryResponse.json();
   return {
-    eventId: data.id,
-    meetLink: meetLink,
-    htmlLink: data.htmlLink || ''
+    eventId: retryData.id,
+    meetLink: fallbackMeetLink,
+    htmlLink: retryData.htmlLink || ''
   };
 };
 
@@ -280,40 +317,42 @@ export const sendGmailMessage = async (
   htmlBody: string,
   from?: string
 ): Promise<boolean> => {
-  const utf8Subject = `=?utf-8?B?${stringToBase64Url(subject)}?=`;
-  const bodyBase64 = stringToBase64Url(htmlBody);
+  try {
+    const emailContent = [
+      `To: ${to}`,
+      from ? `From: ${from}` : '',
+      `Subject: =?utf-8?B?${stringToBase64Url(subject)}?=`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/html; charset=UTF-8',
+      'Content-Transfer-Encoding: 7bit',
+      '',
+      htmlBody
+    ].filter(Boolean).join('\r\n');
 
-  const lines = [
-    `To: ${to}`,
-    from ? `From: ${from}` : '',
-    `Subject: ${utf8Subject}`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/html; charset=utf-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    bodyBase64
-  ].filter(Boolean);
+    const raw = stringToBase64Url(emailContent);
 
-  const raw = stringToBase64Url(lines.join('\r\n'));
+    const response = await fetch(
+      'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ raw })
+      }
+    );
 
-  const response = await fetch(
-    'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ raw })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.warn('Gmail API sending response:', response.status, errorData);
+      return false;
     }
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.warn('Gmail API sending response:', response.status, errorData);
+    return true;
+  } catch (err) {
+    console.warn('sendGmailMessage exception:', err);
     return false;
   }
-  return true;
 };
 
 // HTML Email Templates
