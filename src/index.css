@@ -6,8 +6,18 @@
     scroll-behavior: smooth;
   }
 
+  body {
+    overflow-x: hidden;
+    min-width: 320px;
+  }
+
+  h1, h2, h3, h4, h5, h6, p, span, a, button {
+    overflow-wrap: break-word;
+  }
+
   code, pre, kbd {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    overflow-wrap: break-word;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -24,6 +34,260 @@
     outline: 2px solid #0d9488;
     outline-offset: 3px;
   }
+}
+
+/* High Contrast Mode Overrides (WCAG 1.4.3, 1.4.6, 1.4.11 AAA & Windows High Contrast Alignment) */
+html.high-contrast-mode,
+body.high-contrast-mode,
+.high-contrast-mode {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Strip background images, gradients, and shadows everywhere in high contrast mode */
+.high-contrast-mode,
+.high-contrast-mode * {
+  background-image: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* All container elements get pure black background and white text */
+.high-contrast-mode header,
+.high-contrast-mode nav,
+.high-contrast-mode main,
+.high-contrast-mode footer,
+.high-contrast-mode section,
+.high-contrast-mode article,
+.high-contrast-mode aside,
+.high-contrast-mode div,
+.high-contrast-mode ul,
+.high-contrast-mode ol,
+.high-contrast-mode li,
+.high-contrast-mode form,
+.high-contrast-mode fieldset,
+.high-contrast-mode table,
+.high-contrast-mode thead,
+.high-contrast-mode tbody,
+.high-contrast-mode tr,
+.high-contrast-mode th,
+.high-contrast-mode td {
+  background-color: #000000 !important;
+  backdrop-filter: none !important;
+  color: #ffffff !important;
+}
+
+/* Ensure all cards, panels, dialogs, and tables have crisp high-contrast white borders */
+.high-contrast-mode [role="dialog"],
+.high-contrast-mode [role="region"],
+.high-contrast-mode [role="tabpanel"],
+.high-contrast-mode [role="alert"],
+.high-contrast-mode .rounded-xl,
+.high-contrast-mode .rounded-2xl,
+.high-contrast-mode .rounded-3xl,
+.high-contrast-mode .rounded-lg,
+.high-contrast-mode table,
+.high-contrast-mode th,
+.high-contrast-mode td {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #ffffff !important;
+}
+
+.high-contrast-mode [role="dialog"] {
+  border-width: 2px !important;
+}
+
+/* Text elements */
+.high-contrast-mode p,
+.high-contrast-mode span,
+.high-contrast-mode h1,
+.high-contrast-mode h2,
+.high-contrast-mode h3,
+.high-contrast-mode h4,
+.high-contrast-mode h5,
+.high-contrast-mode h6,
+.high-contrast-mode label,
+.high-contrast-mode strong,
+.high-contrast-mode b,
+.high-contrast-mode em,
+.high-contrast-mode small,
+.high-contrast-mode dt,
+.high-contrast-mode dd,
+.high-contrast-mode blockquote {
+  color: #ffffff !important;
+}
+
+/* Hyperlinks: Bright yellow with prominent underline */
+.high-contrast-mode a,
+.high-contrast-mode a * {
+  color: #ffff00 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  font-weight: 700 !important;
+}
+
+.high-contrast-mode a:hover,
+.high-contrast-mode a:focus-visible {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  outline: 2px solid #ffffff !important;
+}
+
+.high-contrast-mode a:hover *,
+.high-contrast-mode a:focus-visible * {
+  color: #000000 !important;
+}
+
+/* Buttons and interactive controls */
+.high-contrast-mode button,
+.high-contrast-mode [role="button"],
+.high-contrast-mode [role="tab"],
+.high-contrast-mode [role="radio"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast-mode button *,
+.high-contrast-mode [role="button"] *,
+.high-contrast-mode [role="tab"] *,
+.high-contrast-mode [role="radio"] * {
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
+/* Hover, focus, and active/selected states: Invert to Yellow background and Black text */
+.high-contrast-mode button:hover,
+.high-contrast-mode button:focus-visible,
+.high-contrast-mode [role="button"]:hover,
+.high-contrast-mode [role="button"]:focus-visible,
+.high-contrast-mode [role="tab"]:hover,
+.high-contrast-mode [role="tab"]:focus-visible,
+.high-contrast-mode [role="tab"][aria-selected="true"],
+.high-contrast-mode [role="radio"][aria-checked="true"],
+.high-contrast-mode button[aria-pressed="true"],
+.high-contrast-mode button[aria-selected="true"] {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #ffff00 !important;
+  font-weight: bold !important;
+}
+
+.high-contrast-mode button:hover *,
+.high-contrast-mode button:focus-visible *,
+.high-contrast-mode [role="button"]:hover *,
+.high-contrast-mode [role="button"]:focus-visible *,
+.high-contrast-mode [role="tab"]:hover *,
+.high-contrast-mode [role="tab"]:focus-visible *,
+.high-contrast-mode [role="tab"][aria-selected="true"] *,
+.high-contrast-mode [role="radio"][aria-checked="true"] *,
+.high-contrast-mode button[aria-pressed="true"] *,
+.high-contrast-mode button[aria-selected="true"] * {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+/* Form Inputs, Selects, and Textareas */
+.high-contrast-mode input,
+.high-contrast-mode select,
+.high-contrast-mode textarea {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast-mode input::placeholder,
+.high-contrast-mode textarea::placeholder {
+  color: #cbd5e1 !important;
+}
+
+.high-contrast-mode input:focus,
+.high-contrast-mode select:focus,
+.high-contrast-mode textarea:focus {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 2px !important;
+  border-color: #ffff00 !important;
+}
+
+/* High-contrast focus indicator (WCAG 2.4.7 & 2.4.11) */
+.high-contrast-mode :focus-visible {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 3px !important;
+}
+
+/* SVG icons */
+.high-contrast-mode svg {
+  stroke: currentColor !important;
+}
+
+/* Code, Preformatted text, and Snippets */
+.high-contrast-mode code,
+.high-contrast-mode pre,
+.high-contrast-mode kbd {
+  background-color: #000000 !important;
+  color: #00ffff !important;
+  border: 1px solid #ffffff !important;
+}
+
+.high-contrast-mode pre * {
+  color: #00ffff !important;
+}
+
+/* Status Badges with clear contrasting borders */
+.high-contrast-mode [role="status"] {
+  border: 2px solid #ffffff !important;
+}
+
+/* Scrollbars in high contrast mode */
+.high-contrast-mode ::-webkit-scrollbar-track {
+  background: #000000 !important;
+}
+.high-contrast-mode ::-webkit-scrollbar-thumb {
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+}
+
+/* WCAG 1.4.12 Text Spacing & 1.4.4 Resize Text Requirements:
+   - Line height (line spacing) to at least 1.5 times the font size
+   - Spacing following paragraphs to at least 2 times the font size
+   - Letter spacing (tracking) to at least 0.12 times the font size
+   - Word spacing to at least 0.16 times the font size
+   - Text size enlarged by at least 1.25x - 1.5x font size
+*/
+html.text-spacing-mode {
+  font-size: 125% !important;
+}
+
+.text-spacing-mode,
+.text-spacing-mode * {
+  line-height: 1.6 !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+
+.text-spacing-mode p {
+  margin-bottom: 2em !important;
+  margin-block-end: 2em !important;
+}
+
+.text-spacing-mode h1,
+.text-spacing-mode h2,
+.text-spacing-mode h3,
+.text-spacing-mode h4,
+.text-spacing-mode h5,
+.text-spacing-mode h6 {
+  line-height: 1.5 !important;
+  margin-bottom: 1em !important;
+}
+
+.text-spacing-mode li {
+  margin-bottom: 0.5em !important;
+}
+
+.text-spacing-mode svg {
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
 }
 
 /* Custom scrollbar for code and reports */

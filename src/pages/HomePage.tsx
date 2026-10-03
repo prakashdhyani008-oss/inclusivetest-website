@@ -13,6 +13,7 @@ import {
 import { resourcesArticles } from '../data/resourcesData';
 import { InteractiveReportViewer } from '../components/InteractiveReportViewer';
 import { AccessibilityCheckerWidget } from '../components/AccessibilityCheckerWidget';
+import { LogoIcon } from '../components/Logo';
 import { 
   Calendar, 
   ArrowRight, 
@@ -39,8 +40,8 @@ import {
 
 interface HomePageProps {
   onNavigate: (page: PageView) => void;
-  onOpenConsultation: () => void;
-  onBookWithService: (service: ServiceType) => void;
+  onOpenConsultation: (trigger?: React.MouseEvent | HTMLElement) => void;
+  onBookWithService: (service: ServiceType, trigger?: React.MouseEvent | HTMLElement) => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -72,16 +73,18 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Left Content (7 cols) */}
             <div className="lg:col-span-7 space-y-6 text-left">
               
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100 shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" aria-hidden="true" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Digital Accessibility Audits & Consulting</span>
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white text-slate-800 border border-slate-200 shadow-sm">
+                <LogoIcon size={22} />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
+                  <span className="text-[#0052cc]">Inclusive</span><span className="text-[#22c55e]">Test</span> • Digital Access. For All.
+                </span>
               </div>
 
               <h1 id="hero-heading" className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] tracking-tight">
                 From Compliance <br className="hidden sm:inline" />to <span className="text-teal-600">True Inclusion.</span>
               </h1>
 
-              <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
+              <p className="text-lg text-slate-700 leading-relaxed max-w-xl">
                 We test the difference. Expert accessibility auditing, remediation support, and consulting to build digital experiences that work for everyone.
               </p>
 
@@ -89,7 +92,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
                 <button
                   type="button"
-                  onClick={onOpenConsultation}
+                  onClick={(e) => onOpenConsultation(e.currentTarget)}
                   id="hero-primary-cta"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-teal-600 text-white text-base font-bold shadow-lg shadow-teal-600/20 hover:bg-teal-700 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-600"
                 >
@@ -100,24 +103,24 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('services')}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-slate-700 border border-slate-200 bg-white hover:bg-slate-100 hover:shadow-sm transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-slate-800 border border-slate-300 bg-white hover:bg-slate-100 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-600 transition-all"
                 >
                   <span>Explore Services</span>
-                  <ArrowRight className="w-4 h-4 text-slate-500" aria-hidden="true" />
+                  <ArrowRight className="w-4 h-4 text-slate-600" aria-hidden="true" />
                 </button>
               </div>
 
               {/* Assistive Tech Logos / Row */}
               <div className="pt-8 border-t border-slate-200">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 block">
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-4 block">
                   EXPERT TESTING ACROSS ASSISTIVE TECH
                 </span>
-                <div className="flex flex-wrap gap-8 items-center text-sm font-mono font-bold text-slate-500">
-                  <span className="hover:text-slate-800 transition-colors">NVDA</span>
-                  <span className="hover:text-slate-800 transition-colors">JAWS</span>
-                  <span className="hover:text-slate-800 transition-colors">VOICEOVER</span>
-                  <span className="hover:text-slate-800 transition-colors">TALKBACK</span>
-                </div>
+                <ul className="flex flex-wrap gap-8 items-center text-sm font-mono font-bold text-slate-700" aria-label="Expert testing across assistive technologies">
+                  <li className="hover:text-slate-900 transition-colors">NVDA</li>
+                  <li className="hover:text-slate-900 transition-colors">JAWS</li>
+                  <li className="hover:text-slate-900 transition-colors">VOICEOVER</li>
+                  <li className="hover:text-slate-900 transition-colors">TALKBACK</li>
+                </ul>
               </div>
             </div>
 
@@ -132,10 +135,11 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <button 
                     type="button"
                     onClick={() => onNavigate('report-preview')}
-                    className="text-xs text-slate-400 hover:text-teal-300 transition-colors flex items-center gap-1 font-sans"
+                    aria-label="View interactive sample accessibility report"
+                    className="text-xs text-slate-300 hover:text-teal-300 transition-colors flex items-center gap-1 font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded-md px-1 py-0.5"
                   >
                     <span>View Sample Report</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-teal-400" />
+                    <ChevronRight className="w-3.5 h-3.5 text-teal-400" aria-hidden="true" />
                   </button>
                 </div>
 
@@ -144,13 +148,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('audits')}
-                    className="text-left group bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 hover:border-teal-500/50 hover:bg-slate-800 transition-all"
+                    aria-label="Accessibility Audits: Comprehensive WCAG 2.2 assessments using manual testing & screen readers."
+                    className="text-left group bg-slate-800/80 p-5 rounded-2xl border border-slate-700 hover:border-teal-500/50 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 transition-all"
                   >
                     <div className="text-white font-bold text-sm mb-1.5 flex items-center gap-2 group-hover:text-teal-300 transition-colors">
                       <span className="w-2 h-2 rounded-full bg-teal-400" aria-hidden="true" />
                       <span>Audits</span>
                     </div>
-                    <p className="text-slate-400 text-xs leading-relaxed">
+                    <p className="text-slate-300 text-xs leading-relaxed">
                       Comprehensive WCAG 2.2 assessments using manual testing & screen readers.
                     </p>
                   </button>
@@ -159,13 +164,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('remediation')}
-                    className="text-left group bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 hover:border-teal-500/50 hover:bg-slate-800 transition-all"
+                    aria-label="Remediation Support: Code-level guidance & ARIA recommendations for engineering teams."
+                    className="text-left group bg-slate-800/80 p-5 rounded-2xl border border-slate-700 hover:border-teal-500/50 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 transition-all"
                   >
                     <div className="text-white font-bold text-sm mb-1.5 flex items-center gap-2 group-hover:text-teal-300 transition-colors">
                       <span className="w-2 h-2 rounded-full bg-blue-400" aria-hidden="true" />
                       <span>Remediation</span>
                     </div>
-                    <p className="text-slate-400 text-xs leading-relaxed">
+                    <p className="text-slate-300 text-xs leading-relaxed">
                       Code-level guidance & ARIA recommendations for engineering teams.
                     </p>
                   </button>
@@ -174,13 +180,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('vpat')}
-                    className="text-left group bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 hover:border-teal-500/50 hover:bg-slate-800 transition-all"
+                    aria-label="VPAT / ACR Conformance: Detailed Conformance Reports to communicate product maturity."
+                    className="text-left group bg-slate-800/80 p-5 rounded-2xl border border-slate-700 hover:border-teal-500/50 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 transition-all"
                   >
                     <div className="text-white font-bold text-sm mb-1.5 flex items-center gap-2 group-hover:text-teal-300 transition-colors">
                       <span className="w-2 h-2 rounded-full bg-purple-400" aria-hidden="true" />
                       <span>VPAT / ACR</span>
                     </div>
-                    <p className="text-slate-400 text-xs leading-relaxed">
+                    <p className="text-slate-300 text-xs leading-relaxed">
                       Detailed Conformance Reports to communicate product maturity.
                     </p>
                   </button>
@@ -189,22 +196,23 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('legal')}
-                    className="text-left group bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 hover:border-teal-500/50 hover:bg-slate-800 transition-all"
+                    aria-label="Legal Risk Guidance: Technical expertise to prioritize barriers and reduce exposure."
+                    className="text-left group bg-slate-800/80 p-5 rounded-2xl border border-slate-700 hover:border-teal-500/50 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 transition-all"
                   >
                     <div className="text-white font-bold text-sm mb-1.5 flex items-center gap-2 group-hover:text-teal-300 transition-colors">
                       <span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />
                       <span>Legal Risk</span>
                     </div>
-                    <p className="text-slate-400 text-xs leading-relaxed">
+                    <p className="text-slate-300 text-xs leading-relaxed">
                       Technical expertise to prioritize barriers and reduce exposure.
                     </p>
                   </button>
                 </div>
 
                 {/* Bottom interactive widget badge */}
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-teal-400" />
+                    <ShieldCheck className="w-4 h-4 text-teal-400" aria-hidden="true" />
                     <span>WCAG 2.1 & 2.2 AA Specialists</span>
                   </div>
                   <span className="px-2 py-0.5 rounded bg-teal-950 text-teal-300 font-mono text-[10px] border border-teal-800">
@@ -241,32 +249,32 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="bg-slate-100 rounded-3xl p-8 border border-slate-200 flex flex-col justify-between">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Automated Scanners Only</span>
-                <span className="px-3 py-1 rounded-full bg-slate-200 text-slate-700 text-xs font-bold">~30% WCAG Coverage</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Automated Scanners Only</span>
+                <span className="px-3 py-1 rounded-full bg-slate-200 text-slate-800 text-xs font-bold">~30% WCAG Coverage</span>
               </div>
               <h3 className="text-xl font-bold text-slate-900">What Automated Scans Catch</h3>
-              <p className="text-sm text-slate-600">Automated tools test static code attributes against fixed rules. While helpful for baseline diagnostics, they cannot evaluate usability or context.</p>
+              <p className="text-sm text-slate-700">Automated tools test static code attributes against fixed rules. While helpful for baseline diagnostics, they cannot evaluate usability or context.</p>
               
-              <ul className="space-y-2.5 text-xs text-slate-700 pt-2">
+              <ul className="space-y-2.5 text-xs text-slate-800 pt-2">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-slate-500" />
+                  <Check className="w-4 h-4 text-slate-600 flex-shrink-0" aria-hidden="true" />
                   <span>Missing &lt;img alt&gt; attribute tags (syntax check)</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-slate-500" />
+                  <Check className="w-4 h-4 text-slate-600 flex-shrink-0" aria-hidden="true" />
                   <span>Static CSS color contrast failures in simple text</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-slate-500" />
+                  <Check className="w-4 h-4 text-slate-600 flex-shrink-0" aria-hidden="true" />
                   <span>Duplicate HTML element ID attributes</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-slate-500" />
+                  <Check className="w-4 h-4 text-slate-600 flex-shrink-0" aria-hidden="true" />
                   <span>Missing &lt;html lang&gt; language declarations</span>
                 </li>
               </ul>
             </div>
-            <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 italic">
+            <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-600 italic">
               *Cannot verify if alt text makes sense, if modals trap focus, or if screen readers speak correctly.
             </div>
           </div>
@@ -283,35 +291,35 @@ export const HomePage: React.FC<HomePageProps> = ({
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-200 pt-2">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Expert manual testing</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Full keyboard navigation & traps</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Screen-reader audio verification</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>ARIA & semantic state analysis</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Dynamic focus management in SPAs</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Responsive & 400% zoom reflow</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Fix validation & code reviews</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>Automated baseline regression scans</span>
                 </div>
               </div>
@@ -319,16 +327,16 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             {/* Assistive Tech Stack Badges */}
             <div className="mt-8 pt-4 border-t border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block mb-2">
+              <span className="text-[10px] text-slate-300 uppercase font-bold tracking-wider block mb-2">
                 Assistive Technologies Tested in Our Lab:
               </span>
-              <div className="flex flex-wrap gap-2">
+              <ul className="flex flex-wrap gap-2" aria-label="Assistive technologies tested in our lab">
                 {['NVDA (Windows)', 'JAWS (Windows)', 'VoiceOver (macOS/iOS)', 'TalkBack (Android)', 'Switch Controls', 'Voice Control'].map(tech => (
-                  <span key={tech} className="px-2.5 py-1 rounded-md bg-slate-800 text-teal-300 text-xs font-semibold border border-slate-700">
+                  <li key={tech} className="px-2.5 py-1 rounded-md bg-slate-800 text-teal-300 text-xs font-semibold border border-slate-700">
                     {tech}
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
           </div>
@@ -346,7 +354,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <h2 id="services-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Accessibility Services Built Around Your Digital Experience
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed">
             From in-depth diagnostic audits to hands-on front-end remediation and formal VPAT reporting, we support your product at every stage.
           </p>
         </div>
@@ -362,7 +370,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <div className="p-3 rounded-2xl bg-slate-900 text-white group-hover:scale-105 transition-transform shadow-md">
                     {getServiceIcon(service.id)}
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
                     {service.badge}
                   </span>
                 </div>
@@ -376,13 +384,13 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </p>
                 </div>
 
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-slate-700 leading-relaxed">
                   {service.shortDescription}
                 </p>
 
                 {/* Key includes list */}
                 <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
                     What's Included:
                   </span>
                   <ul className="space-y-2 text-xs text-slate-700">
@@ -400,7 +408,8 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate(service.id as any)}
-                  className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-700 group-hover:text-teal-800 hover:underline"
+                  aria-label={`${service.ctaLabel} for ${service.title}`}
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-700 group-hover:text-teal-800 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 rounded-md px-1 py-0.5"
                 >
                   <span>{service.ctaLabel}</span>
                   <ArrowRight className="w-4 h-4 text-teal-600 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
@@ -408,8 +417,9 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => onBookWithService(service.title as ServiceType)}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-sm"
+                  onClick={(e) => onBookWithService(service.title as ServiceType, e.currentTarget)}
+                  aria-label={`Book an accessibility consultation for ${service.title}`}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 transition-all active:scale-95"
                 >
                   Consult on this
                 </button>
@@ -443,10 +453,10 @@ export const HomePage: React.FC<HomePageProps> = ({
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-teal-400 bg-teal-950 px-2.5 py-1 rounded border border-teal-900">
+                    <span className="text-xs font-mono font-bold text-teal-400 bg-teal-950 px-2.5 py-1 rounded border border-teal-900" aria-hidden="true">
                       0{idx + 1}
                     </span>
-                    <span className="text-xs text-slate-400 font-semibold">{feat.badge}</span>
+                    <span className="text-xs text-slate-300 font-semibold">{feat.badge}</span>
                   </div>
                   <h3 className="text-xl font-bold text-white">
                     {feat.title}
@@ -471,7 +481,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <h2 id="standards-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Accessibility Standards We Work With
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed">
             The applicable standard depends on your product distribution, market, industry, and contractual requirements.
           </p>
         </div>
@@ -488,21 +498,21 @@ export const HomePage: React.FC<HomePageProps> = ({
                   <span className="text-sm font-mono font-bold bg-teal-100 text-teal-900 px-3 py-1 rounded-md">
                     {std.code}
                   </span>
-                  <span className="text-xs text-slate-500 font-semibold">{std.jurisdiction}</span>
+                  <span className="text-xs text-slate-700 font-semibold">{std.jurisdiction}</span>
                 </div>
 
                 <h3 className="text-xl font-bold text-slate-900">{std.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{std.summary}</p>
+                <p className="text-sm text-slate-700 leading-relaxed">{std.summary}</p>
               </div>
 
               <div className="space-y-2 pt-4 border-t border-slate-100 text-xs">
                 <div>
-                  <span className="text-slate-500 font-bold block">Applicability:</span>
-                  <span className="text-slate-800">{std.applicability}</span>
+                  <span className="text-slate-700 font-bold block">Applicability:</span>
+                  <span className="text-slate-900">{std.applicability}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-bold block">Legal Context:</span>
-                  <span className="text-slate-800">{std.legalContext}</span>
+                  <span className="text-slate-700 font-bold block">Legal Context:</span>
+                  <span className="text-slate-900">{std.legalContext}</span>
                 </div>
               </div>
             </div>
@@ -515,7 +525,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <Scale className="w-6 h-6" aria-hidden="true" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-base font-bold text-white">{standardsDistinctionNote.headline}</h4>
+            <h3 className="text-base font-bold text-white">{standardsDistinctionNote.headline}</h3>
             <p className="text-sm text-slate-300 leading-relaxed">
               {standardsDistinctionNote.explanation}
             </p>
@@ -533,32 +543,32 @@ export const HomePage: React.FC<HomePageProps> = ({
           <h2 id="approach-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             From Discovery to Remediation — We Stay With You Through the Process.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed">
             Our structured 6-step testing lifecycle ensures your team receives actionable findings, hands-on fix recipes, and definitive verification.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Our 6-step accessibility testing process">
           {testingSteps.map((step) => (
-            <div
+            <li
               key={step.step}
               className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:border-teal-500 transition-colors space-y-4 flex flex-col justify-between"
             >
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-slate-900 text-teal-400 font-extrabold text-base flex items-center justify-center font-mono shadow">
+                <div className="w-12 h-12 rounded-2xl bg-slate-900 text-teal-400 font-extrabold text-base flex items-center justify-center font-mono shadow" aria-hidden="true">
                   {step.step}
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">{step.title}</h3>
                 <p className="text-sm font-semibold text-teal-800">{step.summary}</p>
-                <p className="text-xs text-slate-600 leading-relaxed pt-2">{step.detail}</p>
+                <p className="text-xs text-slate-700 leading-relaxed pt-2">{step.detail}</p>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
       {/* 7. LIVE INTERACTIVE REPORT VIEWER COMPONENT */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Interactive Sample Report Section">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-labelledby="report-viewer-heading">
         <InteractiveReportViewer onOpenConsultation={onOpenConsultation} />
       </section>
 
@@ -572,14 +582,14 @@ export const HomePage: React.FC<HomePageProps> = ({
           <h2 id="business-value-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Accessibility Is More Than Compliance
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed">
             Accessible digital experiences create broader market reach, improve overall usability for all customers, and streamline enterprise software procurement.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Key business values of digital accessibility">
           {businessValuePoints.map((item, i) => (
-            <div
+            <li
               key={i}
               className="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-3"
             >
@@ -587,14 +597,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
-            </div>
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{item.description}</p>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* 9. SCOPE ESTIMATOR & READINESS TOOL */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Accessibility Scope Planner">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-labelledby="scope-planner-heading">
         <AccessibilityCheckerWidget onBookWithScope={onBookWithService} />
       </section>
 
@@ -608,23 +618,23 @@ export const HomePage: React.FC<HomePageProps> = ({
           <h2 id="who-we-help-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Built for Modern Engineering & Product Organizations
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed">
             Whether you manage an enterprise digital portfolio or build a high-growth SaaS platform, we tailor our testing to your workflows.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Who we help across modern organizations">
           {whoWeHelpAudience.map((aud, i) => (
-            <div
+            <li
               key={i}
               className="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm hover:border-teal-500 transition-colors space-y-3"
             >
               <h3 className="text-xl font-bold text-slate-900">{aud.segment}</h3>
               <p className="text-xs font-semibold text-teal-800">{aud.tagline}</p>
-              <p className="text-xs text-slate-600 leading-relaxed pt-1">{aud.description}</p>
-            </div>
+              <p className="text-xs text-slate-700 leading-relaxed pt-1">{aud.description}</p>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       {/* 11. AGENCY PARTNERSHIP SECTION */}
@@ -649,7 +659,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div key={idx} className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                   <span className="text-[10px] text-teal-400 font-mono font-bold block mb-1">Phase 0{idx + 1}</span>
                   <div className="text-sm font-bold text-white">{m.phase}</div>
-                  <div className="text-xs text-slate-400 mt-1">{m.desc}</div>
+                  <div className="text-xs text-slate-300 mt-1">{m.desc}</div>
                 </div>
               ))}
             </div>
@@ -658,7 +668,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 text-xs text-slate-300">
               {agencyPartnershipDetails.benefits.map((b, idx) => (
                 <li key={idx} className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" aria-hidden="true" />
                   <span>{b}</span>
                 </li>
               ))}
@@ -667,8 +677,8 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="pt-4">
               <button
                 type="button"
-                onClick={() => onBookWithService('Agency Partnership')}
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow-md transition-all active:scale-95"
+                onClick={(e) => onBookWithService('Agency Partnership', e.currentTarget)}
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow-md transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               >
                 <span>Partner With InclusiveTest</span>
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -694,7 +704,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('resources')}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 rounded-md px-1 py-0.5"
           >
             <span>View All Guides & Articles</span>
             <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -709,30 +719,31 @@ export const HomePage: React.FC<HomePageProps> = ({
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold">
+                  <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 font-semibold">
                     {art.category}
                   </span>
-                  <span className="text-slate-400">{art.readTime}</span>
+                  <span className="text-slate-600 font-medium">{art.readTime}</span>
                 </div>
 
                 <h3 className="text-lg font-bold text-slate-900 group-hover:text-teal-700 transition-colors line-clamp-2">
                   {art.title}
                 </h3>
 
-                <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                <p className="text-xs text-slate-700 leading-relaxed line-clamp-3">
                   {art.excerpt}
                 </p>
               </div>
 
               <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs text-slate-400">By {art.author.name}</span>
+                <span className="text-xs text-slate-600 font-medium">By {art.author.name}</span>
                 <button
                   type="button"
                   onClick={() => onNavigate('resources')}
-                  className="text-xs font-bold text-teal-700 group-hover:text-teal-900 flex items-center gap-1"
+                  aria-label={`Read guide: ${art.title}`}
+                  className="text-xs font-bold text-teal-700 group-hover:text-teal-900 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 rounded-md px-1 py-0.5"
                 >
                   <span>Read Guide</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -759,9 +770,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               type="button"
-              onClick={onOpenConsultation}
+              onClick={(e) => onOpenConsultation(e.currentTarget)}
               id="final-book-consultation-btn"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-base shadow-lg transition-all active:scale-95"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-base shadow-lg transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <Calendar className="w-5 h-5" aria-hidden="true" />
               <span>Book an Accessibility Consultation</span>
@@ -770,7 +781,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('contact')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-base transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <span>Contact InclusiveTest</span>
             </button>

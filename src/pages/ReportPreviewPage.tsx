@@ -14,7 +14,7 @@ import {
 
 interface ReportPreviewPageProps {
   onNavigate: (page: PageView) => void;
-  onOpenConsultation: () => void;
+  onOpenConsultation: (trigger?: React.MouseEvent | HTMLElement) => void;
 }
 
 export const ReportPreviewPage: React.FC<ReportPreviewPageProps> = ({
@@ -81,8 +81,8 @@ export const ReportPreviewPage: React.FC<ReportPreviewPageProps> = ({
             <span className="text-xs text-slate-500">Ready to audit your web application or mobile ecosystem?</span>
             <button
               type="button"
-              onClick={onOpenConsultation}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow transition-all"
+              onClick={(e) => onOpenConsultation(e.currentTarget)}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               <Calendar className="w-4 h-4" />
               <span>Book an Audit Strategy Call</span>

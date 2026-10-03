@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { PageView, ServiceType } from '../types';
 import { 
   Mail, 
@@ -12,12 +12,13 @@ import {
   Clock, 
   MapPin, 
   Sparkles,
-  Send
+  Send,
+  AlertTriangle
 } from 'lucide-react';
 
 interface ContactPageProps {
   onNavigate: (page: PageView) => void;
-  onOpenConsultation: () => void;
+  onOpenConsultation: (trigger?: React.MouseEvent | HTMLElement) => void;
 }
 
 const SERVICE_OPTIONS: ServiceType[] = [
@@ -54,8 +55,12 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formAnnouncement, setFormAnnouncement] = useState<string>('');
 
-  const validate = () => {
+  const errorSummaryRef = useRef<HTMLDivElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     const errs: Record<string, string> = {};
     if (!formData.name.trim()) errs.name = 'Please provide your full name.';
     if (!formData.email.trim() || !formData.email.includes('@')) {
@@ -63,19 +68,36 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
     }
     if (!formData.company.trim()) errs.company = 'Please enter your organization or company name.';
     if (!formData.jobTitle.trim()) errs.jobTitle = 'Please specify your job title.';
+    
     setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      setSubmitted(true);
+    if (Object.keys(errs).length > 0) {
+      const errorCount = Object.keys(errs).length;
+      const errorListStr = Object.values(errs).join(' ');
+      setFormAnnouncement(`Form submission failed with ${errorCount} error${errorCount === 1 ? '' : 's'}. ${errorListStr}`);
+      
+      const firstKey = Object.keys(errs)[0];
+      const targetId = firstKey === 'jobTitle' ? 'contact-title' : `contact-${firstKey}`;
+      setTimeout(() => {
+        const firstField = document.getElementById(targetId);
+        if (firstField) {
+          firstField.focus();
+        } else if (errorSummaryRef.current) {
+          errorSummaryRef.current.focus();
+        }
+      }, 50);
+      return;
     }
+
+    setSubmitted(true);
+    setFormAnnouncement('Inquiry submitted successfully! A senior accessibility consultant will review your details and reply within 1 business day.');
   };
 
   return (
     <div className="space-y-16 sm:space-y-24 py-10">
+      {/* Live Region for Form Submission & Error Announcements (WCAG 4.1.3 & 3.3.1) */}
+      <div className="sr-only" role="alert" aria-live="assertive" aria-atomic="true">
+        {formAnnouncement}
+      </div>
       
       {/* Header */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
@@ -147,12 +169,15 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
                       id="contact-name"
                       type="text"
                       required
+                      aria-required="true"
+                      aria-invalid={!!errors.name}
+                      aria-describedby={errors.name ? 'contact-name-error' : undefined}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g. David Miller"
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.name ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600`}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.name ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600 focus:outline-none`}
                     />
-                    {errors.name && <p className="text-xs text-rose-600 mt-1">{errors.name}</p>}
+                    {errors.name && <p id="contact-name-error" role="alert" className="text-xs text-rose-600 mt-1">{errors.name}</p>}
                   </div>
 
                   <div>
@@ -163,12 +188,15 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
                       id="contact-email"
                       type="email"
                       required
+                      aria-required="true"
+                      aria-invalid={!!errors.email}
+                      aria-describedby={errors.email ? 'contact-email-error' : undefined}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="dmiller@enterprise.com"
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.email ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600`}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.email ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600 focus:outline-none`}
                     />
-                    {errors.email && <p className="text-xs text-rose-600 mt-1">{errors.email}</p>}
+                    {errors.email && <p id="contact-email-error" role="alert" className="text-xs text-rose-600 mt-1">{errors.email}</p>}
                   </div>
 
                   <div>
@@ -179,12 +207,15 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
                       id="contact-company"
                       type="text"
                       required
+                      aria-required="true"
+                      aria-invalid={!!errors.company}
+                      aria-describedby={errors.company ? 'contact-company-error' : undefined}
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                       placeholder="Acme Corp"
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.company ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600`}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.company ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600 focus:outline-none`}
                     />
-                    {errors.company && <p className="text-xs text-rose-600 mt-1">{errors.company}</p>}
+                    {errors.company && <p id="contact-company-error" role="alert" className="text-xs text-rose-600 mt-1">{errors.company}</p>}
                   </div>
 
                   <div>
@@ -195,12 +226,15 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
                       id="contact-title"
                       type="text"
                       required
+                      aria-required="true"
+                      aria-invalid={!!errors.jobTitle}
+                      aria-describedby={errors.jobTitle ? 'contact-title-error' : undefined}
                       value={formData.jobTitle}
                       onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
                       placeholder="e.g. Head of Engineering, PM"
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.jobTitle ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600`}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm ${errors.jobTitle ? 'border-rose-500 bg-rose-50/50' : 'border-slate-300 bg-white'} focus:ring-2 focus:ring-teal-600 focus:outline-none`}
                     />
-                    {errors.jobTitle && <p className="text-xs text-rose-600 mt-1">{errors.jobTitle}</p>}
+                    {errors.jobTitle && <p id="contact-title-error" role="alert" className="text-xs text-rose-600 mt-1">{errors.jobTitle}</p>}
                   </div>
                 </div>
 
@@ -291,8 +325,8 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate, onOpenCons
               </p>
               <button
                 type="button"
-                onClick={onOpenConsultation}
-                className="w-full py-3 px-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all"
+                onClick={(e) => onOpenConsultation(e.currentTarget)}
+                className="w-full py-3 px-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               >
                 Open Scheduling Calendar
               </button>

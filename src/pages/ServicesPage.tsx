@@ -23,8 +23,8 @@ import {
 interface ServicesPageProps {
   initialServiceId?: string;
   onNavigate: (page: PageView) => void;
-  onOpenConsultation: () => void;
-  onBookWithService: (service: ServiceType) => void;
+  onOpenConsultation: (trigger?: React.MouseEvent | HTMLElement) => void;
+  onBookWithService: (service: ServiceType, trigger?: React.MouseEvent | HTMLElement) => void;
 }
 
 export const ServicesPage: React.FC<ServicesPageProps> = ({
@@ -36,6 +36,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({
   const [selectedServiceId, setSelectedServiceId] = useState<string>(
     initialServiceId || servicesData[0].id
   );
+  const [serviceAnnouncement, setServiceAnnouncement] = useState<string>('');
 
   useEffect(() => {
     if (initialServiceId) {
@@ -45,6 +46,35 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({
   }, [initialServiceId]);
 
   const activeService = servicesData.find(s => s.id === selectedServiceId) || servicesData[0];
+
+  const handleSelectService = (id: string) => {
+    setSelectedServiceId(id);
+    const service = servicesData.find(s => s.id === id);
+    if (service) {
+      setServiceAnnouncement(`Viewing ${service.title}: ${service.tagline}`);
+    }
+  };
+
+  // Arrow key navigation for service category tabs (WCAG 2.1.1)
+  const handleServiceTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex = index;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      nextIndex = (index + 1) % servicesData.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      nextIndex = (index - 1 + servicesData.length) % servicesData.length;
+    } else if (e.key === 'Home') {
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      nextIndex = servicesData.length - 1;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    const nextService = servicesData[nextIndex];
+    handleSelectService(nextService.id);
+    const targetEl = document.getElementById(`service-tab-${nextService.id}`);
+    targetEl?.focus();
+  };
 
   const getServiceIcon = (id: string) => {
     switch (id) {
@@ -58,6 +88,10 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({
 
   return (
     <div className="space-y-20 sm:space-y-28 py-10">
+      {/* Live Region for Dynamic Service Tab Switching (WCAG 4.1.3) */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {serviceAnnouncement}
+      </div>
       
       {/* Header */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
@@ -76,16 +110,20 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({
 
         {/* Quick Service Selector Pills */}
         <div className="pt-6 flex flex-wrap items-center justify-center gap-3" role="tablist" aria-label="Service Categories">
-          {servicesData.map((service) => {
+          {servicesData.map((service, idx) => {
             const isSelected = service.id === selectedServiceId;
             return (
               <button
                 key={service.id}
+                id={`service-tab-${service.id}`}
                 type="button"
                 role="tab"
                 aria-selected={isSelected}
-                onClick={() => setSelectedServiceId(service.id)}
-                className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2.5 border shadow-sm ${
+                aria-controls="service-tabpanel"
+                tabIndex={isSelected ? 0 : -1}
+                onClick={() => handleSelectService(service.id)}
+                onKeyDown={(e) => handleServiceTabKeyDown(e, idx)}
+                className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2.5 border shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 ${
                   isSelected 
                     ? 'bg-slate-900 text-white border-slate-900 ring-2 ring-teal-500 shadow-md' 
                     : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
@@ -101,7 +139,13 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({
 
       {/* Selected Service Detailed Showcase */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+        <div 
+          id="service-tabpanel" 
+          role="tabpanel" 
+          aria-labelledby={`service-tab-${selectedServiceId}`}
+          className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden focus:outline-none"
+          tabIndex={0}
+        >
           
           {/* Service Banner */}
           <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white p-8 sm:p-12 border-b border-slate-800">
@@ -128,8 +172,8 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({
               <div className="pt-4 flex flex-wrap items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => onBookWithService(activeService.title as ServiceType)}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow-md transition-all active:scale-95"
+                  onClick={(e) => onBookWithService(activeService.title as ServiceType, e.currentTarget)}
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow-md transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 >
                   <Calendar className="w-4 h-4" aria-hidden="true" />
                   <span>Book Consultation for {activeService.title}</span>

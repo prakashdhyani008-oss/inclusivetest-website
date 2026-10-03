@@ -68,6 +68,7 @@ export interface ConsultationBookingState {
   message: string;
   confirmed: boolean;
   bookingRef?: string;
+  meetLink?: string;
 }
 
 export interface ResourceArticle {

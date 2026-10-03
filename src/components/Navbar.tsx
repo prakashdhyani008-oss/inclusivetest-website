@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PageView } from '../types';
+import { Logo } from './Logo';
 import { 
   ShieldCheck, 
   Calendar, 
@@ -13,13 +14,14 @@ import {
   Sparkles,
   Contrast,
   Type,
-  ChevronRight
+  ChevronRight,
+  Video
 } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageView;
   onNavigate: (page: PageView) => void;
-  onOpenConsultation: () => void;
+  onOpenConsultation: (trigger?: React.MouseEvent | HTMLElement) => void;
   highContrast: boolean;
   onToggleHighContrast: () => void;
   largeText: boolean;
@@ -37,7 +39,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const [toolbarAnnouncement, setToolbarAnnouncement] = useState<string>('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleContrast = () => {
+    onToggleHighContrast();
+    setToolbarAnnouncement(highContrast ? 'High contrast mode disabled.' : 'High contrast mode enabled: Pure black background, white text, high contrast yellow links and borders.');
+  };
+
+  const handleToggleTextSize = () => {
+    onToggleLargeText();
+    setToolbarAnnouncement(largeText ? 'Default text spacing and size restored.' : 'Text size enlarged (1.25x) and WCAG 1.4.12 text spacing enabled: Line height at least 1.5x, paragraph spacing at least 2x, letter spacing at least 0.12x, word spacing at least 0.16x.');
+  };
 
   // Close dropdown on click outside or Escape
   useEffect(() => {
@@ -50,7 +65,10 @@ export const Navbar: React.FC<NavbarProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setServicesDropdownOpen(false);
-        setMobileMenuOpen(false);
+        if (mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          mobileToggleRef.current?.focus();
+        }
       }
     };
 
@@ -60,12 +78,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [mobileMenuOpen]);
 
   const handleNavClick = (page: PageView) => {
     onNavigate(page);
     setServicesDropdownOpen(false);
-    setMobileMenuOpen(false);
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+      mobileToggleRef.current?.focus();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -79,48 +100,58 @@ export const Navbar: React.FC<NavbarProps> = ({
         Skip to main content
       </a>
 
+      {/* Live Region for Accessibility Toolbar Mode Announcements (WCAG 4.1.3) */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {toolbarAnnouncement}
+      </div>
+
       {/* Accessibility Toolbar */}
-      <div className="bg-slate-100/90 border-b border-slate-200 px-4 py-1.5 text-xs text-slate-700">
+      <div className="bg-slate-100 border-b border-slate-200 px-4 py-1.5 text-xs text-slate-800">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-teal-700 font-semibold">
+            <span className="inline-flex items-center gap-1.5 text-teal-800 font-bold">
               <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
               <span>WCAG 2.2 AA Compliant Architecture</span>
             </span>
-            <span className="hidden md:inline text-slate-300">|</span>
-            <span className="hidden md:inline text-slate-600">Expert Manual & Assistive Tech Testing</span>
+            <span className="hidden md:inline text-slate-400" aria-hidden="true">|</span>
+            <span className="hidden md:inline text-slate-700 font-medium">Expert Manual & Assistive Tech Testing</span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onToggleHighContrast}
+              onClick={handleToggleContrast}
               aria-pressed={highContrast}
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs transition-colors border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors border focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 ${
                 highContrast 
                   ? 'bg-amber-400 text-slate-950 border-amber-500 font-bold shadow-sm' 
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:text-slate-900'
+                  : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-50 hover:text-slate-900 font-semibold'
               }`}
-              title="Toggle High Contrast Display Mode"
+              title="Toggle WCAG AAA High Contrast Display Mode (pure black background, pure white text, high contrast accents)"
             >
-              <Contrast className="w-3 h-3 text-teal-600" aria-hidden="true" />
+              <Contrast className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
               <span>{highContrast ? 'High Contrast: ON' : 'High Contrast'}</span>
             </button>
 
             <button
               type="button"
-              onClick={onToggleLargeText}
+              onClick={handleToggleTextSize}
               aria-pressed={largeText}
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs transition-colors border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors border focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 ${
                 largeText 
-                  ? 'bg-teal-600 text-white border-teal-700 font-bold shadow-sm' 
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-teal-700 text-white border-teal-800 font-bold shadow-sm' 
+                  : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-50 hover:text-slate-900 font-semibold'
               }`}
-              title="Toggle Larger Body Font Size"
+              title="Toggle Text Resize (1.25x) & WCAG 1.4.12 Spacing (1.5x line height, 2x paragraph spacing, 0.12x tracking, 0.16x word spacing)"
             >
-              <Type className="w-3 h-3 text-teal-600" aria-hidden="true" />
-              <span>{largeText ? 'Large Font: ON' : 'Text Size'}</span>
+              <Type className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
+              <span>{largeText ? 'Text Size & Spacing: ON' : 'Text Size & Spacing'}</span>
             </button>
+
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs bg-teal-50 text-teal-900 border border-teal-200 font-semibold" title="Booked appointments automatically generate a Google Meet video conference link and email details to attendee and team">
+              <Video className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
+              <span>Google Meet &amp; Calendar</span>
+            </span>
           </div>
         </div>
       </div>
@@ -134,22 +165,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button 
               type="button"
               onClick={() => handleNavClick('home')}
-              className="flex items-center gap-3 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 rounded-lg p-1"
-              aria-label="InclusiveTest Homepage"
+              className="flex items-center text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 rounded-lg p-1 transition-transform active:scale-95"
+              aria-label="InclusiveTest - Digital Access. For All. Homepage"
             >
-              <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center text-white shadow-sm group-hover:bg-teal-700 transition-colors">
-                <div className="w-4 h-4 border-2 border-white rounded-sm flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                </div>
-              </div>
-              <div>
-                <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-teal-700 transition-colors">
-                  Inclusive<span className="text-teal-600">Test</span>
-                </span>
-                <span className="block text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
-                  Accessibility Consulting
-                </span>
-              </div>
+              <Logo variant="horizontal" size="md" />
             </button>
           </div>
 
@@ -333,7 +352,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="hidden lg:flex items-center gap-3">
             <button
               type="button"
-              onClick={onOpenConsultation}
+              onClick={(e) => onOpenConsultation(e.currentTarget)}
               id="header-book-consultation-btn"
               className="bg-slate-900 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 outline-none transition-all inline-flex items-center gap-2 shadow-sm active:scale-95"
             >
@@ -346,8 +365,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex lg:hidden items-center gap-2">
             <button
               type="button"
-              onClick={onOpenConsultation}
-              className="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-xs shadow-sm"
+              id="mobile-header-book-btn"
+              onClick={(e) => onOpenConsultation(e.currentTarget)}
+              className="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-xs shadow-sm hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 transition-colors"
               aria-label="Book Consultation"
             >
               Book
@@ -355,9 +375,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               type="button"
+              ref={mobileToggleRef}
+              id="mobile-menu-toggle-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+              className="p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 transition-colors"
               aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
               aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
@@ -366,13 +389,54 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu - Scrollable at 200%+ zoom with keyboard focus auto-scroll (WCAG 1.4.4 & 2.4.7) */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 animate-in slide-in-from-top duration-200 shadow-xl">
+        <div 
+          id="mobile-navigation-menu"
+          ref={mobileMenuRef}
+          role="region"
+          aria-label="Mobile Navigation Menu"
+          className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-8 space-y-2 overflow-y-auto max-h-[calc(100vh-6.5rem)] max-h-[calc(100dvh-6.5rem)] shadow-2xl overscroll-contain animate-in slide-in-from-top duration-200 focus:outline-none"
+        >
+          {/* Mobile Accessibility Controls */}
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 mb-2">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Accessibility Controls</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleToggleContrast}
+                aria-pressed={highContrast}
+                className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
+                  highContrast 
+                    ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-sm' 
+                    : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-100'
+                }`}
+              >
+                <Contrast className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
+                <span>{highContrast ? 'Contrast: ON' : 'High Contrast'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleTextSize}
+                aria-pressed={largeText}
+                className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
+                  largeText 
+                    ? 'bg-teal-700 text-white border-teal-800 shadow-sm' 
+                    : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-100'
+                }`}
+              >
+                <Type className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
+                <span>{largeText ? 'Spacing: ON' : 'Text Spacing'}</span>
+              </button>
+            </div>
+          </div>
+
           <button
             type="button"
             onClick={() => handleNavClick('home')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium ${
+            onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1 ${
               currentPage === 'home' ? 'text-teal-700 bg-teal-50 font-bold' : 'text-slate-700 hover:bg-slate-50'
             }`}
           >
@@ -380,53 +444,59 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <div className="border-t border-slate-100 pt-2 pb-1">
-            <div className="px-3.5 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Services</div>
+            <div className="px-3.5 py-1 text-xs font-bold text-slate-500 uppercase tracking-wider">Services</div>
             <button
               type="button"
               onClick={() => handleNavClick('services')}
-              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+              onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1"
             >
               <span>All Consulting Services</span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => handleNavClick('audits')}
-              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6"
+              onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1"
             >
               <span>Accessibility Audits</span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => handleNavClick('remediation')}
-              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6"
+              onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1"
             >
               <span>Remediation Support</span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => handleNavClick('vpat')}
-              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6"
+              onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1"
             >
               <span>VPAT / ACR Reports</span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => handleNavClick('legal')}
-              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6"
+              onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+              className="w-full text-left px-3.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between pl-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1"
             >
               <span>Legal Accessibility Guidance</span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden="true" />
             </button>
           </div>
 
           <button
             type="button"
             onClick={() => handleNavClick('report-preview')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium ${
+            onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1 ${
               currentPage === 'report-preview' ? 'text-teal-700 bg-teal-50 font-bold' : 'text-slate-700 hover:bg-slate-50'
             }`}
           >
@@ -436,7 +506,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => handleNavClick('about')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium ${
+            onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1 ${
               currentPage === 'about' ? 'text-teal-700 bg-teal-50 font-bold' : 'text-slate-700 hover:bg-slate-50'
             }`}
           >
@@ -446,7 +517,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => handleNavClick('resources')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium ${
+            onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1 ${
               currentPage === 'resources' ? 'text-teal-700 bg-teal-50 font-bold' : 'text-slate-700 hover:bg-slate-50'
             }`}
           >
@@ -456,7 +528,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => handleNavClick('contact')}
-            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium ${
+            onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+            className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 scroll-my-1 ${
               currentPage === 'contact' ? 'text-teal-700 bg-teal-50 font-bold' : 'text-slate-700 hover:bg-slate-50'
             }`}
           >
@@ -466,13 +539,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="pt-3">
             <button
               type="button"
-              onClick={() => {
+              onClick={(e) => {
                 setMobileMenuOpen(false);
-                onOpenConsultation();
+                onOpenConsultation(mobileToggleRef.current || e.currentTarget);
               }}
-              className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2"
+              onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 transition-colors scroll-my-1 active:scale-95"
             >
-              <Calendar className="w-4 h-4 text-teal-400" />
+              <Calendar className="w-4 h-4 text-teal-400" aria-hidden="true" />
               <span>Book a Consultation</span>
             </button>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { PageView } from '../types';
 import { aboutCompanyStory } from '../data/companyData';
+import { Logo } from '../components/Logo';
 import { 
   ShieldCheck, 
   HeartHandshake, 
@@ -17,7 +18,7 @@ import {
 
 interface AboutPageProps {
   onNavigate: (page: PageView) => void;
-  onOpenConsultation: () => void;
+  onOpenConsultation: (trigger?: React.MouseEvent | HTMLElement) => void;
 }
 
 export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate, onOpenConsultation }) => {
@@ -26,6 +27,12 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate, onOpenConsulta
       
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+        <div className="flex justify-center mb-2">
+          <div className="p-6 bg-white rounded-3xl shadow-sm border border-slate-200 inline-flex items-center justify-center">
+            <Logo variant="stacked" size="xl" showTagline={true} />
+          </div>
+        </div>
+
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold">
           <HeartHandshake className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Our Mission & Team</span>
@@ -60,8 +67,8 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate, onOpenConsulta
             <div className="pt-4 flex items-center gap-4">
               <button
                 type="button"
-                onClick={onOpenConsultation}
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md transition-all active:scale-95"
+                onClick={(e) => onOpenConsultation(e.currentTarget)}
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
               >
                 <Calendar className="w-4 h-4" aria-hidden="true" />
                 <span>Schedule a Strategy Session</span>
@@ -138,31 +145,31 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate, onOpenConsulta
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-4 list-none p-0 m-0" aria-label="Assistive technologies tested in lab">
+            <li className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
               <span className="text-xs font-mono font-bold text-teal-400">NVDA 2024+</span>
               <div className="text-sm font-bold text-white">Windows 11</div>
               <div className="text-[11px] text-slate-400">Chrome, Edge & Firefox</div>
-            </div>
+            </li>
 
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <li className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
               <span className="text-xs font-mono font-bold text-blue-400">JAWS 2024</span>
               <div className="text-sm font-bold text-white">Windows Enterprise</div>
               <div className="text-[11px] text-slate-400">Chrome & Edge</div>
-            </div>
+            </li>
 
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <li className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
               <span className="text-xs font-mono font-bold text-purple-400">VoiceOver</span>
               <div className="text-sm font-bold text-white">macOS Sonoma & iOS 17+</div>
               <div className="text-[11px] text-slate-400">Safari & WebKit Engine</div>
-            </div>
+            </li>
 
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <li className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
               <span className="text-xs font-mono font-bold text-emerald-400">TalkBack</span>
               <div className="text-sm font-bold text-white">Android 14+</div>
               <div className="text-[11px] text-slate-400">Google Chrome Mobile</div>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
       </section>
 
