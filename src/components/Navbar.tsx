@@ -14,8 +14,7 @@ import {
   Sparkles,
   Contrast,
   Type,
-  ChevronRight,
-  Video
+  ChevronRight
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -147,11 +146,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Type className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
               <span>{largeText ? 'Text Size & Spacing: ON' : 'Text Size & Spacing'}</span>
             </button>
-
-            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs bg-teal-50 text-teal-900 border border-teal-200 font-semibold" title="Booked appointments automatically generate a Google Meet video conference link and email details to attendee and team">
-              <Video className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
-              <span>Google Meet &amp; Calendar</span>
-            </span>
           </div>
         </div>
       </div>
