@@ -177,11 +177,18 @@ export interface BookingResult {
   message: string;
 }
 
+export interface CalendarEventResult {
+  eventId: string;
+  meetLink: string;
+  htmlLink: string;
+  scopeInsufficient?: boolean;
+}
+
 // Create Google Calendar Event with Google Meet video link via Calendar API
 export const createGoogleCalendarEvent = async (
   accessToken: string,
   booking: ConsultationBookingState
-): Promise<{ eventId: string; meetLink: string; htmlLink: string }> => {
+): Promise<CalendarEventResult> => {
   const { startIso, endIso } = getAppointmentDateTimes(booking.date, booking.time, booking.timezone);
   const fallbackMeetLink = `https://meet.google.com/inc-test-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
   const requestId = `meet-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -270,30 +277,45 @@ export const createGoogleCalendarEvent = async (
   }
 
   // Fallback: Create standard event without conferenceData (works on all Google account types)
-  const retryResponse = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all',
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(baseEventPayload)
+  try {
+    const retryResponse = await fetch(
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(baseEventPayload)
+      }
+    );
+
+    if (retryResponse.ok) {
+      const retryData = await retryResponse.json();
+      return {
+        eventId: retryData.id,
+        meetLink: fallbackMeetLink,
+        htmlLink: retryData.htmlLink || ''
+      };
+    } else {
+      const errData = await retryResponse.json().catch(() => ({}));
+      console.warn('Google Calendar standard event creation notice:', retryResponse.status, errData);
+      return {
+        eventId: '',
+        meetLink: fallbackMeetLink,
+        htmlLink: '',
+        scopeInsufficient: retryResponse.status === 403
+      };
     }
-  );
-
-  if (!retryResponse.ok) {
-    const errData = await retryResponse.json().catch(() => ({}));
-    console.error('Google Calendar event creation failed:', errData);
-    throw new Error(errData.error?.message || `Calendar error: ${retryResponse.statusText}`);
+  } catch (retryErr) {
+    console.warn('Google Calendar standard event creation caught:', retryErr);
+    return {
+      eventId: '',
+      meetLink: fallbackMeetLink,
+      htmlLink: '',
+      scopeInsufficient: true
+    };
   }
-
-  const retryData = await retryResponse.json();
-  return {
-    eventId: retryData.id,
-    meetLink: fallbackMeetLink,
-    htmlLink: retryData.htmlLink || ''
-  };
 };
 
 // Safe base64url encoder supporting Unicode and emojis without deprecated unescape

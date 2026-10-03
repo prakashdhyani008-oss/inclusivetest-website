@@ -19,15 +19,20 @@ export const WORKSPACE_SCOPES = [
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Configure Google Auth Provider with Workspace scopes
-export const googleProvider = new GoogleAuthProvider();
-WORKSPACE_SCOPES.forEach(scope => {
-  googleProvider.addScope(scope);
-});
-googleProvider.setCustomParameters({
-  prompt: 'consent',
-  access_type: 'offline'
-});
+// Helper to create a configured Google Auth Provider with all Workspace scopes
+export const createGoogleAuthProvider = (): GoogleAuthProvider => {
+  const provider = new GoogleAuthProvider();
+  WORKSPACE_SCOPES.forEach(scope => {
+    provider.addScope(scope);
+  });
+  provider.setCustomParameters({
+    prompt: 'consent select_account',
+    access_type: 'offline'
+  });
+  return provider;
+};
+
+export const googleProvider = createGoogleAuthProvider();
 
 // In-memory token cache (NEVER persisted to localStorage/sessionStorage per security guidelines)
 let cachedAccessToken: string | null = null;
@@ -58,7 +63,8 @@ export const initAuth = (
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
   try {
     isSigningIn = true;
-    const result = await signInWithPopup(auth, googleProvider);
+    const provider = createGoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     if (!credential?.accessToken) {
       throw new Error('Failed to retrieve access token from Google sign in');
@@ -67,7 +73,7 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     cachedAccessToken = credential.accessToken;
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
-    console.error('Google sign-in error:', error);
+    console.warn('Google sign-in warning:', error);
     throw error;
   } finally {
     isSigningIn = false;
